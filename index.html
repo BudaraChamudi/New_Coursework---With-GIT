@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>After School Club</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background-color: #3b3b3b;
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>{{ sitename }}</h1>
+      <input type="text" v-model="searchQuery" placeholder="Search lessons..." />
+      <span>Total: ${{ cartTotal }}</span>
+      <button v-on:click="showCheckout" :disabled="cart.length === 0">
+        {{ cartItemCount }} <span class="fas fa-cart-plus"></span> Checkout
+      </button>
+    </header>
+  </div>
+</body>
+</html>
