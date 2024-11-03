@@ -32,6 +32,25 @@
     </header>
   </div>
 
+  <div v-if="showProduct">
+    <div>   
+      <label>Sort by:</label>
+      <select v-model="sortAttribute">
+        <option value="">Select</option>
+        <option value="subject">Subject</option>
+        <option value="location">Location</option>
+        <option value="price">Price</option>
+        <option value="availableInventory">Spaces</option>
+      </select>
+      <label>Order:</label>
+      <select v-model="sortOrder">
+        <option value="asc">Ascending</option>
+        <option value="desc">Descending</option>
+      </select>
+    </div>
+
+
+
   <main class="lesson-container">
     <div v-for="lesson in filteredLessons" :key="lesson.id" class="lesson-info">
       <figure class="lesson-image">
@@ -48,9 +67,41 @@
       </div>
     </div>
   </main>
+  </div>
   
 
-
+  <div v-else>
+    <div class="cart-section">
+      <h2>Your Cart</h2>
+      <div v-if="cart.length > 0">
+        <div v-for="item in cart" :key="item.id" class="cart-item">
+          <span>{{ item.subject }} - ${{ item.price }}</span>
+          <button @click="removeFromCart(item)">Remove</button>
+        </div>
+      </div>
+      <div v-else>
+        <p>Your cart is empty.</p>
+      </div>
+    </div>
+    <div class="checkout-section">
+      <h2>Checkout</h2>
+      <div>
+        <label>First Name:</label>
+        <input v-model="order.firstName" />
+      </div>
+      <div>
+        <label>Last Name:</label>
+        <input v-model="order.lastName" />
+      </div>
+      <div>
+        <label>Phone:</label>
+        <input v-model="order.phone" />
+      </div>
+      <button v-on:click="placeOrder" :disabled="!canPlaceOrder">Place Order</button>
+      <button v-on:click="showCheckout">Go back to products</button>
+    </div>
+  </div>
+  
 
 
 
