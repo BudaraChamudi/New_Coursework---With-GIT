@@ -178,16 +178,19 @@
       },
 
       methods: {
-  addToCart(lesson) {
+        addToCart(lesson) {
     if (lesson.availableInventory > 0) {
       this.cart.push({ id: lesson.id, subject: lesson.subject, price: lesson.price });
       lesson.availableInventory--;
     }
   },
   removeFromCart(item) {
-    const lesson = this.lessons.find(lesson => lesson.id === item.id);
-    if (lesson) lesson.availableInventory++;
-    this.cart = this.cart.filter(cartItem => cartItem.id !== item.id);
+    const itemIndex = this.cart.findIndex(cartItem => cartItem.id === item.id);
+    if (itemIndex !== -1) {
+      this.cart.splice(itemIndex, 1);
+      const lesson = this.lessons.find(lesson => lesson.id === item.id);
+      if (lesson) lesson.availableInventory++;
+    }
   },
   showCheckout() {
           this.showProduct = !this.showProduct;
