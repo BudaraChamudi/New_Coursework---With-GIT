@@ -53,6 +53,66 @@
       margin-bottom: 10px;
       display: block;
     }
+    .cart-section {
+  max-width: 800px;
+  margin: auto;
+}
+
+.cart-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.cart-item {
+  display: flex;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  width: 100%;
+  max-width: 250px;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.cart-item-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 4px;
+  object-fit: cover;
+  margin-right: 10px;
+}
+
+.cart-item-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.cart-item-title {
+  font-size: 16px;
+  margin: 0;
+}
+
+.cart-item-price {
+  font-size: 14px;
+  color: #555;
+}
+
+.cart-item-remove {
+  background-color: #ff6666;
+  color: white;
+  border: none;
+  padding: 5px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+.cart-item-remove:hover {
+  background-color: #ff4c4c;
+}
+
 
 
 
@@ -111,12 +171,19 @@
   <div v-else>
     <div class="cart-section">
       <h2>Your Cart</h2>
-      <div v-if="cart.length > 0">
-        <div v-for="item in cart" :key="item.id" class="cart-item">
-          <span>{{ item.subject }} - ${{ item.price }}</span>
-          <button @click="removeFromCart(item)">Remove</button>
+
+      <div v-if="cart.length > 0" class="cart-items">
+        <div v-for="(item, index) in cart" :key="index" class="cart-item">
+          <img :src="getLessonImage(item.id)" alt="Lesson Image" class="cart-item-image" />
+          <div class="cart-item-details">
+            <h3 class="cart-item-title">{{ item.subject }}</h3>
+            <p class="cart-item-price">Price: ${{ item.price }}</p>
+            <button @click="removeFromCart(item)" class="cart-item-remove">Remove</button>
+          </div>
         </div>
-      </div>
+      </div>   
+
+
       <div v-else>
         <p>Your cart is empty.</p>
       </div>
@@ -178,6 +245,10 @@
       },
 
       methods: {
+        getLessonImage(lessonId) {
+    const lesson = this.lessons.find(lesson => lesson.id === lessonId);
+    return lesson ? lesson.image : '';
+  },
         addToCart(lesson) {
     if (lesson.availableInventory > 0) {
       this.cart.push({ id: lesson.id, subject: lesson.subject, price: lesson.price });
