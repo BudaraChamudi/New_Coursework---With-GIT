@@ -99,7 +99,23 @@
     const lesson = this.lessons.find(lesson => lesson.id === item.id);
     if (lesson) lesson.availableInventory++;
     this.cart = this.cart.filter(cartItem => cartItem.id !== item.id);
+  },
+  showCheckout() {
+          this.showProduct = !this.showProduct;
+        },
+
+  placeOrder() {
+    if (this.canPlaceOrder) {
+      alert("Order placed successfully!");
+      this.resetOrder();
+    }
+  },
+  resetOrder() {
+    this.order = { firstName: '', lastName: '', phone: '' };
+    this.cart = [];
+    this.showProduct = true;
   }
+
 },
 
 
