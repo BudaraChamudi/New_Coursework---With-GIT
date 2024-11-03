@@ -32,6 +32,24 @@
     </header>
   </div>
 
+  <main class="lesson-container">
+    <div v-for="lesson in filteredLessons" :key="lesson.id" class="lesson-info">
+      <figure class="lesson-image">
+        <img :src="lesson.image" :alt="lesson.subject" />
+      </figure>
+      <div class="lesson-details">
+        <h2>{{ lesson.subject }}</h2>
+        <p>{{ lesson.location }}</p>
+        <p>Price: ${{ lesson.price }}</p>
+        <p>Available spaces: {{ lesson.availableInventory }}</p>
+        <button v-on:click="addToCart(lesson)" :disabled="lesson.availableInventory === 0">
+          Add to cart
+        </button>
+      </div>
+    </div>
+  </main>
+  
+
 
 
 
@@ -68,7 +86,25 @@
         searchQuery: '',
         sortAttribute: '',
         sortOrder: 'asc'
-      }
+      },
+
+      methods: {
+  addToCart(lesson) {
+    if (lesson.availableInventory > 0) {
+      this.cart.push({ id: lesson.id, subject: lesson.subject, price: lesson.price });
+      lesson.availableInventory--;
+    }
+  },
+  removeFromCart(item) {
+    const lesson = this.lessons.find(lesson => lesson.id === item.id);
+    if (lesson) lesson.availableInventory++;
+    this.cart = this.cart.filter(cartItem => cartItem.id !== item.id);
+  }
+}
+
+
+
+
     });
     </script>
     
