@@ -201,17 +201,22 @@
         <h2>Checkout</h2>
         <div>
           <label>First Name:</label>
-          <input v-model="order.firstName" />
+          <input v-model="order.firstName" @input="validateFirstName"/>
+          <small v-if="firstNameError" class="error-message">Please enter a valid first name (letters only).</small>
         </div>
         <div>
           <label>Last Name:</label>
-          <input v-model="order.lastName" />
-        </div>
+          <input v-model="order.lastName" @input="validateLastName" />
+          <small v-if="lastNameError" class="error-message">Please enter a valid last name (letters only).</small>
+  </div>
+        
         <div>
           <label>Phone:</label>
-          <input v-model="order.phone" />
+          <input v-model="order.phone" @input="validatePhone"  />
+          <small v-if="phoneError" class="error-message">Please enter a valid phone number (numbers only).</small>
         </div>
-        <button v-on:click="placeOrder" :disabled="!canPlaceOrder">Place Order</button>
+        </div>
+        <button v-on:click="placeOrder" :disabled="!canPlaceOrder" @click="placeOrder">Place Order</button>
         <button v-on:click="showCheckout">Go back to products</button>
       </div>
     </div>
@@ -226,7 +231,10 @@
         order: {
           firstName: '',
           lastName: '',
-          phone: ''
+          phone: '',
+          firstNameError: false,
+          lastNameError: false,
+          phoneError: false,
         },
         lessons: [
           { id: 1, subject: "Maths", location: "London", price: 320, image: "assets/maths.jpg", availableInventory: 17 },
@@ -252,7 +260,6 @@
   },
 
 
-
         addToCart(lesson) {
     if (lesson.availableInventory > 0) {
       this.cart.push({ id: lesson.id, subject: lesson.subject, price: lesson.price });
@@ -270,12 +277,34 @@
         showCheckout() {
           this.showProduct = !this.showProduct;
         },
-        placeOrder() {
-          if (this.canPlaceOrder) {
-            alert("Order placed successfully!");
-            this.resetOrder();
-          }
-        },
+        validateFirstName() {
+        // Only letters allowed
+        const regex = /^[a-zA-Z]+$/;
+        this.firstNameError = !regex.test(this.firstName);
+      },
+      validateLastName() {
+        // Only letters allowed
+        const regex = /^[a-zA-Z]+$/;
+        this.lastNameError = !regex.test(this.lastName);
+      },
+      validatePhone() {
+        // Only numbers allowed
+        const regex = /^[0-9]+$/;
+        this.phoneError = !regex.test(this.phone);
+      },
+      placeOrder() {
+    // Ensure all fields are validated before placing the order
+    this.validateFirstName();
+    this.validateLastName();
+    this.validatePhone();
+
+    if (!this.firstNameError && !this.lastNameError && !this.phoneError) {
+      alert('Order placed successfully!');
+      this.showProduct = true; // Navigate back to products
+    } else {
+      alert('Please correct the errors in the form.');
+    }
+  },
         resetOrder() {
           this.order = { firstName: '', lastName: '', phone: '' };
           this.cart = [];
@@ -283,6 +312,10 @@
         },
       },
       computed: {
+        isOrderDisabled() {
+        // The button is disabled if there's any error in the fields
+        return this.firstNameError || this.lastNameError || this.phoneError;
+      },
         cartTotal() {
     return this.cart.reduce((total, item) => total + item.price, 0);
   },
@@ -290,10 +323,16 @@
           return this.cart.length;
         },
         canPlaceOrder() {
-          const validName = /^[A-Za-z]+$/.test(this.order.firstName);
-          const validPhone = /^[0-9]+$/.test(this.order.phone);
-          return validName && validPhone && this.cart.length > 0;
-        },
+    // Only enable the "Place Order" button when all validations pass
+    return (
+      !this.firstNameError &&
+      !this.lastNameError &&
+      !this.phoneError &&
+      this.order.firstName &&
+      this.order.lastName &&
+      this.order.phone
+    );
+  },
         filteredLessons() {
           let lessons = this.lessons.filter(lesson => {
             return (
