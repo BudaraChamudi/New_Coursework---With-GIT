@@ -67,6 +67,11 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
+@media (max-width: 600px) {
+  .lesson-container {
+    grid-template-columns: 1fr; /* Single column for small screens */
+  }
+}
 
 .cart-item:hover {
   transform: scale(1.03);
@@ -166,7 +171,7 @@
         <p>{{ lesson.location }}</p>
         <p>Price: ${{ lesson.price }}</p>
         <p>Available spaces: {{ lesson.availableInventory }}</p>
-        <button v-on:click="addToCart(lesson)" :disabled="lesson.availableInventory === 0">
+        <button v-on:click="addToCart(lesson)" :disabled="lesson.availableInventory === 0" aria-label="Add to Cart">
           Add to cart
         </button>
       </div>
@@ -256,19 +261,18 @@
     const lesson = this.lessons.find(lesson => lesson.id === lessonId);
     return lesson ? lesson.image : '';
   },
-        addToCart(lesson) {
+  addToCart(lesson) {
     if (lesson.availableInventory > 0) {
-      this.cart.push({ id: lesson.id, subject: lesson.subject, price: lesson.price });
       lesson.availableInventory--;
+      this.cart.push({ ...lesson });
     }
   },
   removeFromCart(item) {
-    const itemIndex = this.cart.findIndex(cartItem => cartItem.id === item.id);
-    if (itemIndex !== -1) {
-      this.cart.splice(itemIndex, 1);
-      const lesson = this.lessons.find(lesson => lesson.id === item.id);
-      if (lesson) lesson.availableInventory++;
+    let lesson = this.lessons.find(l => l.id === item.id);
+    if (lesson) {
+      lesson.availableInventory++;
     }
+    this.cart = this.cart.filter(cartItem => cartItem.id !== item.id);
   },
   showCheckout() {
           this.showProduct = !this.showProduct;
@@ -290,27 +294,28 @@
 
 
 computed: {
-  cartTotal() {
-    return this.cart.reduce((total, item) => total + item.price, 0);
+  canPlaceOrder() {
+    return this.order.firstName && this.order.lastName && this.order.phone;
   },
   cartItemCount() {
     return this.cart.length;
   },
+  cartTotal() {
+    return this.cart.reduce((sum, item) => sum + item.price, 0);
+  },
   filteredLessons() {
-    let lessons = this.lessons.filter(lesson => {
-      return (
-        lesson.subject.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        lesson.location.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        lesson.price.toString().includes(this.searchQuery) ||
-        lesson.availableInventory.toString().includes(this.searchQuery)
-      );
-    });
+    let lessons = this.lessons.filter(lesson => 
+      lesson.subject.toLowerCase().includes(this.searchQuery.toLowerCase())
+    );
     if (this.sortAttribute) {
       lessons.sort((a, b) => {
-        let modifier = this.sortOrder === 'asc' ? 1 : -1;
-        if (a[this.sortAttribute] < b[this.sortAttribute]) return -1 * modifier;
-        if (a[this.sortAttribute] > b[this.sortAttribute]) return 1 * modifier;
-        return 0;
+        let compareA = a[this.sortAttribute];
+        let compareB = b[this.sortAttribute];
+        if (this.sortOrder === 'asc') {
+          return compareA > compareB ? 1 : -1;
+        } else {
+          return compareA < compareB ? 1 : -1;
+        }
       });
     }
     return lessons;
