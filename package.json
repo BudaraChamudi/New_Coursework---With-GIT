@@ -1,0 +1,9 @@
+{
+    "name": "after-school-club",
+    "version": "1.0.0",
+    "description": "A simple Vue.js and Node.js project for an after-school club.",
+    "main": "server.js",
+    "dependencies": {
+        "express": "^4.21.1"
+    }
+}

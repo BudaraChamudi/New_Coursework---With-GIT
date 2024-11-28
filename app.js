@@ -29,6 +29,10 @@ new Vue({
     sortOrder: 'asc'
   },
   methods: {
+    async fetchLessons() {
+        const response = await fetch('http://localhost:5000/lessons');
+        this.lessons = await response.json();
+      },
     getLessonImage(lessonId) {
 const lesson = this.lessons.find(lesson => lesson.id === lessonId);
 return lesson ? lesson.image : '';
@@ -48,6 +52,26 @@ if (itemIndex !== -1) {
   const lesson = this.lessons.find(lesson => lesson.id === item.id);
   if (lesson) lesson.availableInventory++;
 }
+},
+async placeOrder() {
+    const order = {
+      ...this.order,
+      cart: this.cart,
+      total: this.cartTotal,
+    };
+    const response = await fetch('http://localhost:5000/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(order),
+    });
+    const result = await response.json();
+    alert(result.message);
+    this.cart = [];
+    this.order = { firstName: '', lastName: '', phone: '' };
+  },
+},
+mounted() {
+  this.fetchLessons();
 },
     showCheckout() {
       this.showProduct = !this.showProduct;
