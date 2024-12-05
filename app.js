@@ -161,12 +161,16 @@ new Vue({
     canPlaceOrder() {
       // Check if all fields are filled
       const isFirstNameFilled = this.order.firstName.trim() !== '';
-      const isPhoneFilled = this.order.phone.trim() !== '';
-      const isAddressFilled = this.order.address.trim() !== '';
-      const isCartNotEmpty = this.cart.length > 0;
+    const isLastNameFilled = this.order.lastName.trim() !== '';
+    const isPhoneFilled = this.order.phone.trim() !== '';
+    const isAddressFilled = this.order.address.trim() !== '';
+    const isCartNotEmpty = this.cart.length > 0;
 
-      // The button is enabled when all fields are filled and the cart is not empty
-      return isFirstNameFilled && isPhoneFilled && isAddressFilled && isCartNotEmpty;
+    // Ensure no validation errors exist
+    const noErrors = !this.errors.firstName && !this.errors.lastName && !this.errors.phone;
+
+      // The button is enabled when all fields are filled, no errors exist, and the cart is not empty
+    return isFirstNameFilled && isLastNameFilled && isPhoneFilled && isAddressFilled && isCartNotEmpty && noErrors;
     },
 
     filteredLessons() {
