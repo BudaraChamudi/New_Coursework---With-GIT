@@ -179,6 +179,12 @@
             <p>{{ lesson.location }}</p>
             <p>Price: ${{ lesson.price }}</p>
             <p>Available spaces: {{ lesson.availableInventory }}</p>
+            <p v-if="lesson.availableInventory <= 5 && lesson.availableInventory > 0" style="color: red;">
+              Only {{ lesson.availableInventory }} lessons left!
+            </p>
+            <p v-if="lesson.availableInventory === 0" style="color: gray;">
+              Out of stock
+            </p>
             <button v-on:click="addToCart(lesson)" :disabled="lesson.availableInventory === 0">
               Add to cart
             </button>
