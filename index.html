@@ -10,7 +10,7 @@
     body {
       font-family: Arial, sans-serif;
       background-size: cover;
-      background-color: rgb(237, 226, 15);
+      background-color: rgb(15, 189, 237);
       background-position: center;
       background-attachment: fixed;
       color: #333;
@@ -42,7 +42,13 @@
       flex-direction: column;
       align-items: center;
     }
-  
+    .error {
+  font-size: 12px;      /* Smaller font size */
+  font-style: italic;   /* Italic font */
+  color: red;           /* Red color for errors */
+  margin-top: 5px;      /* Small margin to separate from input field */
+  display: block;       /* Ensure the error message appears below the input */
+}
     .lesson-image img,
     .cart-item-image {
       width: 200px;
@@ -198,42 +204,71 @@
             </div>
           </div>
         </div>
-
-
-
-          
-        </div>
         <div v-else>
           <p>Your cart is empty.</p>
         </div>
+
+        <div class="checkout-section">
+          <h2>Checkout</h2>
+          <div style="position: relative; margin-bottom: 15px;">
+            <label>First Name:</label>
+            <input v-model="order.firstName" @input="validateFirstName" />
+            <span v-if="errors.firstName" class="error">{{ errors.firstName }}</span>
+        </div>
+        <div style="position: relative; margin-bottom: 15px;">
+            <label>Last Name:</label>
+            <input v-model="order.lastName" @input="validateLastName" />
+            <span v-if="errors.lastName" class="error">{{ errors.lastName }}</span>
+        </div>
+          
+        <div style="position: relative; margin-bottom: 15px;">
+          <label>Phone:</label>
+          <input v-model="order.phone" @input="validatePhone" />
+          <span v-if="errors.phone" class="error">{{ errors.phone }}</span>
+      </div>
+          <div>
+            <label>Address:</label>
+            <input v-model="order.address"/>
+          </div>
+          </div>
+          <button v-on:click="placeOrder" :disabled="!canPlaceOrder">Place Order</button>
+  
+          <button v-on:click="showCheckout">Go back to products</button>
+
+          
+        </div>
+        
       </div>
 
-      <div class="checkout-section">
+      <!-- <div class="checkout-section">
         <h2>Checkout</h2>
         <div>
           <label>First Name:</label>
-          <input v-model="order.firstName" @input="validateFirstName"/>
-          <small v-if="firstNameError" class="error-message">Please enter a valid first name (letters only).</small>
+          <input v-model="order.firstName"/>
         </div>
         <div>
           <label>Last Name:</label>
-          <input v-model="order.lastName" @input="validateLastName" />
-          <small v-if="lastNameError" class="error-message">Please enter a valid last name (letters only).</small>
+          <input v-model="order.lastName"/>
   </div>
         
         <div>
           <label>Phone:</label>
-          <input v-model="order.phone" @input="validatePhone"  />
-          <small v-if="phoneError" class="error-message">Please enter a valid phone number (numbers only).</small>
+          <input v-model="order.phone"/>
+        </div>
+        <div>
+          <label>Address:</label>
+          <input v-model="order.address"/>
         </div>
         </div>
-        <button v-on:click="placeOrder" :disabled="!canPlaceOrder" @click="placeOrder">Place Order</button>
-        <button v-on:click="showCheckout">Go back to products</button>
+        <button v-on:click="placeOrder" :disabled="!canPlaceOrder">Place Order</button>
+
+        <button v-on:click="showCheckout">Go back to products</button> -->
       </div>
     </div>
   </div>
-
-  <script>
+<script src="app.js">  </script>
+  <!-- <script>
+    
   new Vue({
     el: '#app',
     data: {
@@ -242,10 +277,11 @@
       order: {
         firstName: '',
         lastName: '',
-        phone: ''
+        phone: '',
+        address: ''
       },
       lessons: [
-      { id: 1, subject: "Maths", location: "London", price: 320, image: "assets/maths.jpg", availableInventory: 17 },
+      { id: 1, subject: "Maths", location: "London", price: 320, image: "s/maths.jpg", availableInventory: 17 },
       { id: 2, subject: "Biology", location: "New York", price: 125, image: "assets/bio.jpg", availableInventory: 22 },
       { id: 3, subject: "History", location: "Paris", price: 65, image: "assets/history.jpg", availableInventory: 10 },
       { id: 4, subject: "Music", location: "Columbia", price: 29, image: "assets/music.jpg", availableInventory: 20 },
@@ -262,40 +298,41 @@
       sortOrder: 'asc'
     },
     methods: {
-      getLessonImage(lessonId) {
-        const lesson = this.lessons.find(lesson => lesson.id === lessonId);
-        return lesson ? lesson.image : '';
-      },
+  getLessonImage(lessonId) {
+    const lesson = this.lessons.find(lesson => lesson.id === lessonId);
+    return lesson ? lesson.image : '';
+  },
 
-      addToCart(lesson) {
-        if (lesson.availableInventory > 0) {
-          this.cart.push({ id: lesson.id, subject: lesson.subject, price: lesson.price });
-          lesson.availableInventory--;
-        }
-      },
-      removeFromCart(item) {
-        const itemIndex = this.cart.findIndex(cartItem => cartItem.id === item.id);
-        if (itemIndex !== -1) {
-          this.cart.splice(itemIndex, 1);
-          const lesson = this.lessons.find(lesson => lesson.id === item.id);
-          if (lesson) lesson.availableInventory++;
-        }
-      },
-      showCheckout() {
-        this.showProduct = !this.showProduct; // Toggles visibility of the product and checkout pages
-      },
-      placeOrder() {
-        if (this.canPlaceOrder) {
-          alert("Order placed successfully!");
-          this.resetOrder();
-        }
-      },
-      resetOrder() {
-        this.order = { firstName: '', lastName: '', phone: '' };
-        this.cart = [];
-        this.showProduct = true; // Go back to products after order reset
-      },
-    },
+  addToCart(lesson) {
+    if (lesson.availableInventory > 0) {
+      this.cart.push({ id: lesson.id, subject: lesson.subject, price: lesson.price });
+      lesson.availableInventory--;
+    }
+  },
+  removeFromCart(item) {
+    const itemIndex = this.cart.findIndex(cartItem => cartItem.id === item.id);
+    if (itemIndex !== -1) {
+      this.cart.splice(itemIndex, 1);
+      const lesson = this.lessons.find(lesson => lesson.id === item.id);
+      if (lesson) lesson.availableInventory++;
+    }
+  },
+  showCheckout() {
+  this.showProduct = !this.showProduct; // Toggle between product and checkout sections
+},
+  placeOrder() {
+    if (this.canPlaceOrder) {
+      alert("Order placed successfully!");
+      this.resetOrder();
+    }
+  },
+  resetOrder() {
+    this.order = { firstName: '', lastName: '', phone: '', address: ''};
+    this.cart = [];
+    this.showProduct = true; 
+  },
+},
+
     computed: {
       cartTotal() {
         return this.cart.reduce((total, item) => total + item.price, 0);
@@ -304,10 +341,18 @@
         return this.cart.length;
       },
       canPlaceOrder() {
-        const validName = /^[A-Za-z]+$/.test(this.order.firstName);
-        const validPhone = /^[0-9]+$/.test(this.order.phone);
-        return validName && validPhone && this.cart.length > 0;
-      },
+  // Check if all fields are filled
+  const isFirstNameFilled = this.order.firstName.trim() !== '';
+  const isPhoneFilled = this.order.phone.trim() !== '';
+  const isAddressFilled = this.order.address.trim() !== '';  // Address should be filled
+  const isCartNotEmpty = this.cart.length > 0;  // Cart should not be empty
+
+  // The button is enabled when all fields are filled and the cart is not empty
+  return isFirstNameFilled && isPhoneFilled && isAddressFilled && isCartNotEmpty;
+},
+
+
+
       filteredLessons() {
         let lessons = this.lessons.filter(lesson => {
           return (
@@ -330,7 +375,7 @@
       }
     }
   });
-</script>
+</script> -->
 
 
 </body>

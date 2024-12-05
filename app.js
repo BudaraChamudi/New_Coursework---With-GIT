@@ -1,137 +1,174 @@
 new Vue({
   el: '#app',
+
   data: {
     sitename: "After School Club",
-    showProduct: true,
+    showProduct: true, // Controls whether to show the product page or the checkout page
     order: {
       firstName: '',
       lastName: '',
       phone: '',
-      firstNameError: false,
-      lastNameError: false,
-      phoneError: false,
+      address: ''
     },
-    lessons: [
-      { id: 1, subject: "Maths", location: "London", price: 320, image: "assets/maths.jpg", availableInventory: 17 },
-      { id: 2, subject: "Biology", location: "New York", price: 125, image: "assets/bio.jpg", availableInventory: 22 },
-      { id: 3, subject: "History", location: "Paris", price: 65, image: "assets/history.jpg", availableInventory: 10 },
-      { id: 4, subject: "Music", location: "Columbia", price: 29, image: "assets/music.jpg", availableInventory: 20 },
-      { id: 5, subject: "Art & Craft", location: "Sydney", price: 99, image: "assets/art.jpg", availableInventory: 10 },
-      { id: 6, subject: "IT", location: "San Francisco", price: 220, image: "assets/it.jpg", availableInventory: 12 },
-      { id: 7, subject: "English", location: "Chicago", price: 35, image: "assets/english.jpg", availableInventory: 17 },
-      { id: 8, subject: "Physics", location: "Berlin", price: 150, image: "assets/physics.jpg", availableInventory: 23 },
-      { id: 9, subject: "Chemistry", location: "Tokyo", price: 299, image: "assets/chemistry.jpg", availableInventory: 30 },
-      { id: 10, subject: "Accounts", location: "Los Angeles", price: 175, image: "assets/accounts.jpg", availableInventory: 15 }
-    ],
+    errors: {
+      firstName: '',
+      lastName: '',
+      phone: ''
+    },
+    lessons: [],
     cart: [],
     searchQuery: '',
     sortAttribute: '',
     sortOrder: 'asc'
   },
+  created: function () { // Automatically runs when creating the Vue instance
+    fetch("http://localhost:3000/collection/Products")
+      .then(response => response.json())
+      .then(data => {
+        this.lessons = data;
+      })
+      .catch(error => {
+        console.error("Error fetching products:", error);
+        alert("Failed to load products.");
+      });
+  },
   methods: {
-    async fetchLessons() {
-        const response = await fetch('http://localhost:5000/lessons');
-        this.lessons = await response.json();
-      },
     getLessonImage(lessonId) {
-const lesson = this.lessons.find(lesson => lesson.id === lessonId);
-return lesson ? lesson.image : '';
-},
-
+      const lesson = this.lessons.find(lesson => lesson.id === lessonId);
+      return lesson ? lesson.image : '';
+    },
 
     addToCart(lesson) {
-if (lesson.availableInventory > 0) {
-  this.cart.push({ id: lesson.id, subject: lesson.subject, price: lesson.price });
-  lesson.availableInventory--;
-}
-},
-removeFromCart(item) {
-const itemIndex = this.cart.findIndex(cartItem => cartItem.id === item.id);
-if (itemIndex !== -1) {
-  this.cart.splice(itemIndex, 1);
-  const lesson = this.lessons.find(lesson => lesson.id === item.id);
-  if (lesson) lesson.availableInventory++;
-}
-},
-async placeOrder() {
-    const order = {
-      ...this.order,
-      cart: this.cart,
-      total: this.cartTotal,
-    };
-    const response = await fetch('http://localhost:5000/orders', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(order),
-    });
-    const result = await response.json();
-    alert(result.message);
-    this.cart = [];
-    this.order = { firstName: '', lastName: '', phone: '' };
-  },
-},
-mounted() {
-  this.fetchLessons();
-},
+      if (lesson.subject.toLowerCase() === "mango" && lesson.availableInventory > 0) {
+        this.cart.push({ id: lesson.id, subject: lesson.subject, price: lesson.price });
+        lesson.availableInventory--;
+      } else if (lesson.availableInventory > 0) {
+        this.cart.push({ id: lesson.id, subject: lesson.subject, price: lesson.price });
+        lesson.availableInventory--;
+      }
+    },
+
+    removeFromCart(item) {
+      const itemIndex = this.cart.findIndex(cartItem => cartItem.id === item.id);
+      if (itemIndex !== -1) {
+        this.cart.splice(itemIndex, 1);
+        const lesson = this.lessons.find(lesson => lesson.id === item.id);
+        if (lesson) lesson.availableInventory++;
+      }
+    },
+
     showCheckout() {
-      this.showProduct = !this.showProduct;
+      this.showProduct = !this.showProduct; // Toggle between product and checkout sections
     },
     validateFirstName() {
-    // Only letters allowed
-    const regex = /^[a-zA-Z]+$/;
-    this.firstNameError = !regex.test(this.firstName);
-  },
-  validateLastName() {
-    // Only letters allowed
-    const regex = /^[a-zA-Z]+$/;
-    this.lastNameError = !regex.test(this.lastName);
-  },
-  validatePhone() {
-    // Only numbers allowed
-    const regex = /^[0-9]+$/;
-    this.phoneError = !regex.test(this.phone);
-  },
+      const regex = /^[A-Za-z]+$/;
+      this.errors.firstName = regex.test(this.order.firstName) ? '' : 'First name must only contain letters.';
+    },
+    validateLastName() {
+      const regex = /^[A-Za-z]+$/;
+      this.errors.lastName = regex.test(this.order.lastName) ? '' : 'Last name must only contain letters.';
+    },
+    validatePhone() {
+      const regex = /^\d{10}$/;
+      this.errors.phone = regex.test(this.order.phone) ? '' : 'Phone number must be exactly 10 digits and contain only numbers.';
+    },
   placeOrder() {
-// Ensure all fields are validated before placing the order
-this.validateFirstName();
-this.validateLastName();
-this.validatePhone();
+    // Validate inputs
+    this.validateFirstName();
+    this.validateLastName();
+    this.validatePhone();
+  
+    // Check if there are any validation errors
+    if (this.errors.firstName || this.errors.lastName || this.errors.phone) {
+      alert("Please fix the errors in the form before placing the order.");
+      return;
+    }
+  
+    // Proceed if the form is valid and canPlaceOrder is true
+    if (this.canPlaceOrder) {
+      const newOrder = {
+        firstName: this.order.firstName,
+        lastName: this.order.lastName,
+        phone: this.order.phone,
+        address: this.order.address,
+        cart: this.cart // Include the items in the cart in the order
+      };
+  
+      fetch("http://localhost:3000/collection/Orders", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newOrder)
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to submit order.');
+          }
+          return response.json();
+        })
+        .then(data => {
+          alert('Order submitted successfully!');
+  
+          // Update product availability
+          const updatePromises = this.cart.map(product =>
+            fetch(`http://localhost:3000/collection/Products/${product.id}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                availableInventory: product.availableInventory - 1 // Decrease availability by 1
+              })
+            }).then(response => {
+              if (!response.ok) {
+                throw new Error(`Failed to update product ${product.id}`);
+              }
+              return response.json();
+            })
+          );
+  
+          // Wait for all updates to complete
+          return Promise.all(updatePromises);
+        })
+        .then(() => {
+          console.log('All product availability updated successfully.');
+          this.resetOrder(); // Reset the order and cart after processing
+        })
+        .catch(error => {
+          console.error('Error occurred:', error);
+        });
+    } else {
+      alert("Please complete all required fields and ensure the cart is not empty before placing the order.");
+    }
+  },
+  
 
-if (!this.firstNameError && !this.lastNameError && !this.phoneError) {
-  alert('Order placed successfully!');
-  this.showProduct = true; // Navigate back to products
-} else {
-  alert('Please correct the errors in the form.');
-}
-},
     resetOrder() {
-      this.order = { firstName: '', lastName: '', phone: '' };
+      this.order = { firstName: '', lastName: '', phone: '', address: '' };
       this.cart = [];
       this.showProduct = true;
-    },
+    }
   },
+
   computed: {
-    isOrderDisabled() {
-    // The button is disabled if there's any error in the fields
-    return this.firstNameError || this.lastNameError || this.phoneError;
-  },
     cartTotal() {
-return this.cart.reduce((total, item) => total + item.price, 0);
-},
+      return this.cart.reduce((total, item) => total + item.price, 0);
+    },
     cartItemCount() {
       return this.cart.length;
     },
     canPlaceOrder() {
-// Only enable the "Place Order" button when all validations pass
-return (
-  !this.firstNameError &&
-  !this.lastNameError &&
-  !this.phoneError &&
-  this.order.firstName &&
-  this.order.lastName &&
-  this.order.phone
-);
-},
+      // Check if all fields are filled
+      const isFirstNameFilled = this.order.firstName.trim() !== '';
+      const isPhoneFilled = this.order.phone.trim() !== '';
+      const isAddressFilled = this.order.address.trim() !== '';
+      const isCartNotEmpty = this.cart.length > 0;
+
+      // The button is enabled when all fields are filled and the cart is not empty
+      return isFirstNameFilled && isPhoneFilled && isAddressFilled && isCartNotEmpty;
+    },
+
     filteredLessons() {
       let lessons = this.lessons.filter(lesson => {
         return (
