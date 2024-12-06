@@ -39,14 +39,36 @@ new Vue({
     },
 
     addToCart(lesson) {
-      if (lesson.subject.toLowerCase() === "mango" && lesson.availableInventory > 0) {
+      if (lesson.availableInventory > 0) {
         this.cart.push({ id: lesson.id, subject: lesson.subject, price: lesson.price });
         lesson.availableInventory--;
-      } else if (lesson.availableInventory > 0) {
-        this.cart.push({ id: lesson.id, subject: lesson.subject, price: lesson.price });
-        lesson.availableInventory--;
+    
+        // Perform a PUT request to update inventory in the database
+        fetch(`http://localhost:3000/collection/Products/${lesson._id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ availableInventory: lesson.availableInventory - 1}),
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error("Failed to update inventory");
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log("Inventory updated successfully:", data);
+        })
+        .catch(error => {
+          console.error("Error updating inventory:", error);
+        });
+      } else {
+        console.error("No inventory available for this lesson.");
       }
     },
+    
+    
 
     removeFromCart(item) {
       const itemIndex = this.cart.findIndex(cartItem => cartItem.id === item.id);
@@ -111,23 +133,7 @@ new Vue({
           alert('Order submitted successfully!');
   
           // Update product availability
-          const updatePromises = this.cart.map(product =>
-            fetch(`http://localhost:3000/collection/Products/${product.id}`, {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                availableInventory: product.availableInventory - 1 // Decrease availability by 1
-              })
-            }).then(response => {
-              if (!response.ok) {
-                throw new Error(`Failed to update product ${product.id}`);
-              }
-              return response.json();
-            })
-          );
-  
+          
           // Wait for all updates to complete
           return Promise.all(updatePromises);
         })
